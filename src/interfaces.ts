@@ -24,3 +24,8 @@ export interface SelectedTile {
     tableIdx:number
     tileIdx:number
 }
+
+export interface SelectedLine {
+    playerIdx:number
+    lineIdx:number
+}
