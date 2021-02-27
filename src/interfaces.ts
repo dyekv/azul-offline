@@ -17,4 +17,10 @@ export interface Player {
     work:Line[]
     board:Line[]
     over:Tile[]
+    point:number
+}
+
+export interface SelectedTile {
+    tableIdx:number
+    tileIdx:number
 }
