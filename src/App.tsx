@@ -1,7 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import './App.css';
 import {Game,Table,Group,Tile,SelectedTile} from './interfaces'
-import {initializedGame,makeRandomGroup,makeRandomTable} from './gameFunctions'
+import {initializedGame,gameStep} from './gameFunctions'
 
 // import {Box} from '@chakra-ui/react'
 
@@ -10,6 +10,13 @@ function App() {
 
   const [game,setGame] = useState<Game>(initializedGame())
   const [selectedTile,setSelectedTile] = useState<SelectedTile>()
+
+  const onClickButton = () => {
+    console.log(1)
+    if(selectedTile !== undefined){
+      setGame(gameStep(game,selectedTile,{playerIdx:0,lineIdx:0}))
+    }
+  }
 
   return (
     <div className="game-wrapper">
@@ -58,6 +65,7 @@ function App() {
           </div>
         })}
       </div>
+      <button style={{margin:20,padding:20}} onClick={onClickButton}>run</button>
     </div>
   );
 }
