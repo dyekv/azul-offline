@@ -1,7 +1,7 @@
 import {Game,Table,Group,Tile,Line,Player,SelectedTile,SelectedLine} from './interfaces'
 
 export const makeRandomGroup = ():Group => {
-    const tiles = ['sun','moon','snow','leaf','dream'];
+    const tiles = ['sun','moon','snow','leaf','dream']
     const group = [...Array(4)].map(()=>{
         // 0~4の乱数を生成
         const random = Math.floor(Math.random() * 5)
@@ -22,7 +22,7 @@ const makeInitializedPlayer = (countPlayer:number):Player[] => {
 }
 
 export const makeRandomTable = ():Table => {
-    const center:Tile[] = ['first'];
+    const center:Tile[] = ['first']
     const groups = [...Array(5)].map(()=>{
         return makeRandomGroup()
     })
@@ -68,49 +68,45 @@ const nextPlayer = (players:Player[],nowPlaying:number):number => {
 
 export const gameStep = (game:Game,selectedTile:SelectedTile,selectedLine:SelectedLine):Game => {
 
-    // 処理を行ってよいかチェックする（Todo 外部化して事前チェックし、そもそも処理を走らせないようにする）
-    const tile = game.table.groups[selectedTile.tableIdx][selectedTile.tileIdx]
-    if(!lineCheck(game,selectedLine,tile)){
-        return game
+    const targetPlayer = game.players[selectedLine.playerIdx]
+    const isSelectCenter = selectedTile.tableIdx < 0
+    const targetGroup = isSelectCenter ? game.table.center : game.table.groups[selectedTile.tableIdx]
+    const targetTileType = targetGroup[selectedTile.tileIdx]
+    const targetWorkLine = targetPlayer.work[selectedLine.lineIdx]
+
+    // playerの更新
+    const countSameTile = targetGroup.reduce((cnt,tile) => tile === targetTileType ? cnt + 1 : cnt, 0)
+    const targetWorkCapacity = selectedLine.lineIdx + 1 - targetWorkLine.length
+    const addWorkTilesCount = targetWorkCapacity >= countSameTile ? countSameTile : targetWorkCapacity
+    const addWorkTiles = [...Array(addWorkTilesCount)].map(()=>targetTileType)
+    targetPlayer.work[selectedLine.lineIdx].push(...addWorkTiles)
+    
+    const isGetFirst = isSelectCenter && targetGroup.indexOf('first') >= 0
+    if(isGetFirst){
+        targetPlayer.over.push('first')
     }
-    if(game.table.groups.length !== 0){
-
-
-        const targetGroup = game.table.groups[selectedTile.tableIdx]
-        const targetTileType = targetGroup[selectedTile.tileIdx]
-        const targetPlayer = game.players[selectedLine.playerIdx]
-        const targetWorkLine = targetPlayer.work[selectedLine.lineIdx]
-
-        // Tableの更新処理 Todo
-        const newGropus:Group[] = []
-        const newCenter:Tile[] = []
-        const newTable:Table = {
-            groups:newGropus,
-            center:newCenter
-        }
-
-        // playerの更新
-        const countSameTile = targetGroup.reduce((cnt,tile) => tile === targetTileType ? cnt + 1 : cnt, 0);
-        const targetWorkCapacity = selectedLine.lineIdx + 1 - targetWorkLine.length;
-        const addWorkTilesCount = targetWorkCapacity >= countSameTile ? countSameTile : targetWorkCapacity;
-        const addWorkTiles = [...Array(addWorkTilesCount)].map(()=>targetTileType);
-        const newWorkLine = [...targetPlayer.work[selectedLine.lineIdx],...addWorkTiles];
-        targetPlayer.work.splice(selectedLine.lineIdx,1,newWorkLine);
-        const addOverTilesCount = targetWorkCapacity >= countSameTile ? 0 : countSameTile - targetWorkCapacity;
-        [...Array(addOverTilesCount)].forEach(()=>targetPlayer.over.push(targetTileType));
-        
-        // プレイヤーの更新処理
-        const newNowPlaying = nextPlayer(game.players,game.nowPlaying)
-
-        console.log({...game,table:newTable ,nowPlaying:newNowPlaying})
-        return {...game,table:newTable ,nowPlaying:newNowPlaying}
-
+    const addOverTilesCount = targetWorkCapacity >= countSameTile ? 0 : countSameTile - targetWorkCapacity
+    const addOverTiles = [...Array(addOverTilesCount)].map(()=>targetTileType)
+    targetPlayer.over.push(...addOverTiles)
+    
+    // Tableの更新
+    if(isSelectCenter){
+        const newCenter = targetGroup.filter(tile => tile !== targetTileType && tile !== 'first')
+        game.table.center = newCenter
     }else{
-        // Todo 全部のgroupがなくなったときの処理
-        return game
+        const addCenter = targetGroup.filter(tile => tile !== targetTileType)
+        game.table.center.push(...addCenter)
+        game.table.groups.splice(selectedTile.tableIdx,1)
     }
 
+    // 操作ターンのプレイヤーの更新
+    const newNowPlaying = nextPlayer(game.players,game.nowPlaying)
 
-
-
+    
+    // Todo 全部のgroupがなくなったときの処理
+    if(game.table.groups.length === 0 && game.table.center.length === 0){
+        console.log('なくなった')
+    }
+    
+    return {...game, nowPlaying:newNowPlaying}
 }
