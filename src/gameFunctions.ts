@@ -105,8 +105,53 @@ export const gameStep = (game:Game,selectedTile:SelectedTile,selectedLine:Select
     
     // Todo 全部のgroupがなくなったときの処理
     if(game.table.groups.length === 0 && game.table.center.length === 0){
+        // Todo テーブルをリセットする
+        const newTable = makeRandomTable()
+        // Todo 次の最初にタイルを取る人を設定（nowPlayingを上書き？）
+        const nextNowPlaying = game.players.findIndex(player => player.over.indexOf('first') > -1)
+        const newPlayers = game.players.map(player => {
+            return playerCalc(player)
+        })
         console.log('なくなった')
+        return {
+            table:newTable,
+            players:newPlayers,
+            nowPlaying:nextNowPlaying
+        }
     }
     
     return {...game, nowPlaying:newNowPlaying}
+}
+
+const playerCalc = (player:Player):Player => {
+    const oldBoard:Line[] = player.board
+    const newBoard:Line[] = [] // Todo 新しいBoardを作る処理（揃ったタイルはボードに移す、一応チェックする）
+    const newWork:Line[] = [] // Todo 新しいWorkを作る処理（余ったタイルは次に引き継ぐ）
+    const additionalPoint = additionalPointsCalc(oldBoard,newBoard)
+    const mainusPoint = mainusPointsCalc(player.over.length)
+    const playerPoint = player.point + additionalPoint - mainusPoint
+    return {
+        point:playerPoint,
+        board:newBoard,
+        work:newWork,
+        over:[]
+    }
+}
+
+const additionalPointsCalc = (oldBoard:Line[],newBoard:Line[]):number => {
+    // Todo add ボードを比較して加算される点数を計算する処理
+    return 0
+}
+
+const mainusPointsCalc = (tileCount:number):number => {
+    const mainusPointsArray = [1,1,2,2,2]; // 減点の数列は、1,1,2,2,2,3,3,...
+    let mainusPoint = 0;
+    [...Array(tileCount)].forEach((_,idx)=>{
+        if(idx < mainusPointsArray.length) {
+            mainusPoint += mainusPointsArray[idx];
+        } else {
+            mainusPoint += 3;
+        }
+    });
+    return mainusPoint;
 }
