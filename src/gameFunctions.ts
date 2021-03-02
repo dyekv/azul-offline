@@ -169,7 +169,17 @@ const playerCalc = (player: Player): Player => {
 
 const additionalPointsCalc = (oldBoard: Line[], newBoard: Line[]): number => {
   // Todo add ボードを比較して加算される点数を計算する処理
-  return 0;
+  const changeTiles = newBoard.map((line, idx) => {
+    return line.filter(
+      (tile) => oldBoard[idx].findIndex((oldtile) => tile === oldtile) < 0
+    );
+  });
+  const mappingChangeTiles = mapping(changeTiles);
+  const mappingNewBoard = mapping(newBoard);
+  let additionalPoint = 0;
+  // Todo マッピングしたチェンジタイルを繰り返して、trueの箇所を探す
+  // 探したtrueの箇所の上下左右の埋まり具合をmappingNewBoardで確認して、点数を加算する
+  return additionalPoint;
 };
 
 const mainusPointsCalc = (tileCount: number): number => {
@@ -183,4 +193,26 @@ const mainusPointsCalc = (tileCount: number): number => {
     }
   });
   return mainusPoint;
+};
+
+const makeMappingBoard = (): Line[] => {
+  const tiles = ["sun", "moon", "snow", "leaf", "dream"] as Line;
+  const tileMapping = (lineIdx: number): Tile[] => {
+    return [...Array(5)].map((_, idx) => {
+      const mappingIdx = (idx + lineIdx) % 5;
+      return tiles[mappingIdx];
+    });
+  };
+  const mapping = [...Array(5)].map((_, idx) => tileMapping(idx));
+  return mapping;
+};
+
+const mapping = (board: Line[]): boolean[][] => {
+  const mappingBoard = makeMappingBoard();
+  const mappingResult = mappingBoard.map((mappingLine, idx) => {
+    return mappingLine.map((mappingTile) => {
+      return board[idx].findIndex((tile) => tile === mappingTile) >= 0;
+    });
+  });
+  return mappingResult;
 };
