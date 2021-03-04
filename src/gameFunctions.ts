@@ -125,11 +125,21 @@ export const gameStep = (game:Game,selectedTile:SelectedTile,selectedLine:Select
 
 const playerCalc = (player:Player):Player => {
     const oldBoard:Line[] = player.board
-    const newBoard:Line[] = [] // Todo 新しいBoardを作る処理（揃ったタイルはボードに移す、一応チェックする）
-    const newWork:Line[] = [] // Todo 新しいWorkを作る処理（余ったタイルは次に引き継ぐ）
+    const newBoard:Line[] = player.board.map(line => [...line]) // deap copy
+    const newWork:Line[] = []
+    player.work.forEach((line,lineIdx) => {
+        const isWorkLinefull = line.length > lineIdx
+        if(isWorkLinefull){
+            newWork.push([])
+            newBoard[lineIdx].push(line[0])
+        }else{
+            newWork.push(line)
+        }
+    })
     const additionalPoint = additionalPointsCalc(oldBoard,newBoard)
     const mainusPoint = mainusPointsCalc(player.over.length)
     const playerPoint = player.point + additionalPoint - mainusPoint
+    console.log({oldBoard,newBoard})
     return {
         point:playerPoint,
         board:newBoard,

@@ -49,9 +49,10 @@ function App() {
           >{tile}</div>
         })}</div>
       </div>
-      <div className="players-wrapper">
+      <div className="players-wrapper" style={{display:'flex'}}>
         {game.players.map((player,playerIdx)=>{
-          return <div key={playerIdx} className="player" style={{margin:'20px 0',backgroundColor:'#DDD'}}>
+          const isMyTurn = game.nowPlaying === playerIdx
+          return <div key={playerIdx} className="player" style={{margin:'20px 20px',backgroundColor:isMyTurn ? '#CFF' : '#DDD',width:'48%'}}>
             <div className="point">{player.point}</div>
             <div className="work">
               {player.work.map((line,lineIdx)=>{
@@ -62,16 +63,16 @@ function App() {
                 </div>
               })}
             </div>
-            <div className="over">
+            <div className="over" style={{margin:'15px 5px',border:'1px solid blue',height:32, display:'flex'}}>
               {player.over.map((tile,idx)=>{
                   return <div className="tile" key={idx}>{tile}</div>
                 })}
             </div>
-            <div className="board">
+            <div className="board" style={{marginTop:10}}>
               {player.board.map((line,idx)=>{
-                return <div className="line" key={idx}>
+                return <div className="line" key={idx} style={{margin:5,border:'1px solid red',height:32, display:'flex'}}>
                   {line.map((tile,idx)=>{
-                    return <div className="tile" key={idx}>{tile}</div>
+                    return <div className="tile" key={idx} style={{marginRight:20}}>{tile}</div>
                   })}
                 </div>
               })}
