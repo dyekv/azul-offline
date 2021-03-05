@@ -1,10 +1,11 @@
 import React,{useState,useEffect} from 'react';
 import './App.css';
 import {Game,Table,Group,Tile,SelectedTile,SelectedLine} from './interfaces'
-import {initializedGame,gameStep,lineCheck} from './gameFunctions'
+import {initializedGame,gameStep,lineCheck,makeMappingBoard} from './gameFunctions'
 
 // import {Box} from '@chakra-ui/react'
 
+const mappingBoard = makeMappingBoard()
 
 function App() {
 
@@ -69,10 +70,10 @@ function App() {
                 })}
             </div>
             <div className="board" style={{marginTop:10}}>
-              {player.board.map((line,idx)=>{
-                return <div className="line" key={idx} style={{margin:5,border:'1px solid red',height:32, display:'flex'}}>
-                  {line.map((tile,idx)=>{
-                    return <div className="tile" key={idx} style={{marginRight:20}}>{tile}</div>
+              {player.board.map((line,lineIdx)=>{
+                return <div className="line" key={lineIdx} style={{margin:5,border:'1px solid red',height:32, display:'flex'}}>
+                  {line.map((isTile,tileIdx)=>{
+                    return <div className="tile" key={tileIdx} style={{marginRight:20 ,color:isTile?"#000":"#DDD"}}>{mappingBoard[lineIdx][tileIdx]}</div>
                   })}
                 </div>
               })}

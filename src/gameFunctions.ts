@@ -23,7 +23,7 @@ const makeInitializedPlayer = (countPlayer: number): Player[] => {
   return [...Array(countPlayer)].map(() => {
     return {
       work: [...Array(5)].map(() => []),
-      board: [...Array(5)].map(() => []),
+      board: [...Array(5)].map(() => [false,false,false,false,false]),
       over: [],
       point: 0,
     };
@@ -60,8 +60,10 @@ export const lineCheck = (
   const emptyLine = player.work[selectedLine.lineIdx].length === 0;
   const sameTileLine =
     !emptyLine && player.work[selectedLine.lineIdx][0] === tile;
-  const sameLineBoard = player.board[selectedLine.lineIdx];
-  const boardExistSameTile = sameLineBoard.indexOf(tile) >= 0;
+  const mappingBoard = makeMappingBoard()
+  const sameLineBoard = mappingBoard[selectedLine.lineIdx];
+  const mappingIndex = sameLineBoard.indexOf(tile);
+  const boardExistSameTile = player.board[selectedLine.lineIdx][mappingIndex];
   if (!emptyLine && !sameTileLine) {
     console.log("!emptyLine && !sameTileLine");
     return false;
@@ -153,8 +155,8 @@ export const gameStep = (
 };
 
 const playerCalc = (player: Player): Player => {
-  const oldBoard: Line[] = player.board;
-  const newBoard: Line[] = []; // Todo 新しいBoardを作る処理（揃ったタイルはボードに移す、一応チェックする）
+  const oldBoard: boolean[][] = player.board;
+  const newBoard: boolean[][] = []; // Todo 新しいBoardを作る処理（揃ったタイルはボードに移す、一応チェックする）
   const newWork: Line[] = []; // Todo 新しいWorkを作る処理（余ったタイルは次に引き継ぐ）
   const additionalPoint = additionalPointsCalc(oldBoard, newBoard);
   const mainusPoint = mainusPointsCalc(player.over.length);
@@ -167,20 +169,74 @@ const playerCalc = (player: Player): Player => {
   };
 };
 
-const additionalPointsCalc = (oldBoard: Line[], newBoard: Line[]): number => {
+const additionalPointsCalc = (oldBoard: boolean[][], newBoard: boolean[][]): number => {
   // Todo add ボードを比較して加算される点数を計算する処理
-  const changeTiles = newBoard.map((line, idx) => {
-    return line.filter(
-      (tile) => oldBoard[idx].findIndex((oldtile) => tile === oldtile) < 0
-    );
-  });
-  const mappingChangeTiles = mapping(changeTiles);
-  const mappingNewBoard = mapping(newBoard);
-  let additionalPoint = 0;
-  // Todo マッピングしたチェンジタイルを繰り返して、trueの箇所を探す
-  // 探したtrueの箇所の上下左右の埋まり具合をmappingNewBoardで確認して、点数を加算する
+  
+  let additionalPoint = 0
+  const addPoints = (y:number,x:number):void=>{
+    additionalPoint += 1
+    additionalPoint += searchUp(newBoard,x,y)
+    additionalPoint += searchDown(oldBoard,x,y)
+    additionalPoint += searchLeft(newBoard,x,y)
+    additionalPoint += searchRight(oldBoard,x,y)
+  }
+  const searchUp = (board:boolean[][],x:number,y:number):number => {
+    let point = 0;
+    while(y >=0 ){
+        if(board[y][x]){
+            point ++
+            y--
+        }else{
+            break;
+        }
+    }
+    return point
+}
+const searchDown = (board:boolean[][],x:number,y:number):number => {
+    let point = 0;
+    while(y < 5 ){
+        if(board[y][x]){
+            point ++
+            y++
+        }else{
+            break;
+        }
+    }
+    return point
+}
+const searchLeft = (board:boolean[][],x:number,y:number):number => {
+    let point = 0;
+    while(x >=0 ){
+        if(board[y][x]){
+            point ++
+            x--
+        }else{
+            break;
+        }
+    }
+    return point
+}
+const searchRight = (board:boolean[][],x:number,y:number):number => {
+    let point = 0;
+    while(x < 5 ){
+        if(board[y][x]){
+            point ++
+            x++
+        }else{
+            break;
+        }
+    }
+    return point
+}
+
+  newBoard.forEach((line, lineIdx) => {
+    line.forEach((isTile,tileIdx)=>{
+      if(oldBoard[lineIdx][tileIdx] === isTile) addPoints(lineIdx,tileIdx)
+    })
+});
   return additionalPoint;
 };
+
 
 const mainusPointsCalc = (tileCount: number): number => {
   const mainusPointsArray = [1, 1, 2, 2, 2]; // 減点の数列は、1,1,2,2,2,3,3,...
@@ -195,7 +251,7 @@ const mainusPointsCalc = (tileCount: number): number => {
   return mainusPoint;
 };
 
-const makeMappingBoard = (): Line[] => {
+export const makeMappingBoard = (): Line[] => {
   const tiles = ["sun", "moon", "snow", "leaf", "dream"] as Line;
   const tileMapping = (lineIdx: number): Tile[] => {
     return [...Array(5)].map((_, idx) => {
