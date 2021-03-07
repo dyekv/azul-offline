@@ -73,7 +73,7 @@ function App() {
               {player.board.map((line,lineIdx)=>{
                 return <div className="line" key={lineIdx} style={{margin:5,border:'1px solid red',height:32, display:'flex'}}>
                   {line.map((isTile,tileIdx)=>{
-                    return <div className="tile" key={tileIdx} style={{marginRight:20 ,color:isTile?"#000":"#DDD"}}>{mappingBoard[lineIdx][tileIdx]}</div>
+                    return <div className="tile" key={tileIdx} style={{marginRight:20 ,color:isTile?"#000":"#FFF"}}>{mappingBoard[lineIdx][tileIdx]}</div>
                   })}
                 </div>
               })}

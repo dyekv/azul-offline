@@ -9,6 +9,10 @@ import {
   SelectedLine,
 } from "./interfaces";
 
+export const deepCopyAoa = <T>(aoa:T[][]):T[][] => {
+  return aoa.map(array => [...array])
+}
+
 export const makeRandomGroup = (): Group => {
   const tiles = ["sun", "moon", "snow", "leaf", "dream"];
   const group = [...Array(4)].map(() => {
@@ -155,19 +159,37 @@ export const gameStep = (
 };
 
 const playerCalc = (player: Player): Player => {
-  const oldBoard: boolean[][] = player.board;
-  const newBoard: boolean[][] = []; // Todo 新しいBoardを作る処理（揃ったタイルはボードに移す、一応チェックする）
-  const newWork: Line[] = []; // Todo 新しいWorkを作る処理（余ったタイルは次に引き継ぐ）
+  const oldBoard: boolean[][] = deepCopyAoa<boolean>(player.board);
+  const newBoard = makeNewBoardAndNewWork(oldBoard,player.work);
+  
   const additionalPoint = additionalPointsCalc(oldBoard, newBoard);
   const mainusPoint = mainusPointsCalc(player.over.length);
   const playerPoint = player.point + additionalPoint - mainusPoint;
   return {
     point: playerPoint,
     board: newBoard,
-    work: newWork,
+    work: player.work,
     over: [],
   };
 };
+
+export const lineIdxAndTileTypeToTileIdx = (lineIdx:number,tileType:Tile):number=> {
+  const mappingBoard = makeMappingBoard()
+  const targetLine = mappingBoard[lineIdx]
+  return targetLine.indexOf(tileType)
+}
+
+const makeNewBoardAndNewWork = (oldBoard:boolean[][],work:Line[]):boolean[][] => {
+  const newBoard = deepCopyAoa<boolean>(oldBoard)
+  work.forEach((line,lineIdx)=>{
+    if(line.length > lineIdx){
+      const tileIdx = lineIdxAndTileTypeToTileIdx(lineIdx,line[0])
+      newBoard[lineIdx].splice(tileIdx,1,true)
+      work.splice(lineIdx,1,[])
+    }
+  })
+  return newBoard
+}
 
 const additionalPointsCalc = (oldBoard: boolean[][], newBoard: boolean[][]): number => {
   // Todo add ボードを比較して加算される点数を計算する処理
