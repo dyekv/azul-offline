@@ -17,7 +17,7 @@ function App() {
       const selectedGroup = selectedTile.tableIdx === -1 ? game.table.center : game.table.groups[selectedTile.tableIdx]
       const tileType = selectedGroup[selectedTile.tileIdx]
       if(lineCheck(game,selectedLine,tileType)){
-        setGame(gameStep(game,selectedTile,selectedLine))
+        setGame(gameStep({ game, selectedTile, selectedLine }))
         setSelectedTile(undefined)
       }
     }
@@ -64,7 +64,7 @@ function App() {
                 </div>
               })}
             </div>
-            <div className="over" style={{margin:'15px 5px',border:'1px solid blue',height:32, display:'flex'}}>
+            <div className="over" style={{ margin: '15px 5px', border: '1px solid blue', height: 32, display: 'flex' }} onClick={() => {onClickWorkLine({playerIdx,lineIdx:-1}) }}>
               {player.over.map((tile,idx)=>{
                   return <div className="tile" key={idx}>{tile}</div>
                 })}
