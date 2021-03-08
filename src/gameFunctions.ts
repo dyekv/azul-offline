@@ -170,35 +170,28 @@ export const gameStep: gameStep = (props) => {
 
 const playerCalc = (player: Player): Player => {
   const oldBoard: boolean[][] = deepCopyAoa<boolean>(player.board);
-  const newBoard = makeNewBoardAndNewWork(oldBoard,player.work);
-  
-  const additionalPoint = additionalPointsCalc(oldBoard, newBoard);
+  moveTileFromWorkToBoard(oldBoard,player.work);
+  const additionalPoint = additionalPointsCalc(oldBoard, player.board);
   const mainusPoint = mainusPointsCalc(player.over.length);
   const playerPoint = player.point + additionalPoint - mainusPoint;
   return {
     point: playerPoint,
-    board: newBoard,
+    board: player.board,
     work: player.work,
     over: [],
   };
 };
 
-export const lineIdxAndTileTypeToTileIdx = (lineIdx:number,tileType:Tile):number=> {
+const moveTileFromWorkToBoard = (board: boolean[][], work: Line[]): void => {
   const mappingBoard = makeMappingBoard()
-  const targetLine = mappingBoard[lineIdx]
-  return targetLine.indexOf(tileType)
-}
-
-const makeNewBoardAndNewWork = (oldBoard:boolean[][],work:Line[]):boolean[][] => {
-  const newBoard = deepCopyAoa<boolean>(oldBoard)
   work.forEach((line,lineIdx)=>{
-    if(line.length > lineIdx){
-      const tileIdx = lineIdxAndTileTypeToTileIdx(lineIdx,line[0])
-      newBoard[lineIdx].splice(tileIdx,1,true)
+    if (line.length > lineIdx) {
+      const targetLineOnBoard = mappingBoard[lineIdx]
+      const tileIdxOnBoard = targetLineOnBoard.indexOf(line[0])
+      board[lineIdx].splice(tileIdxOnBoard,1,true)
       work.splice(lineIdx,1,[])
     }
   })
-  return newBoard
 }
 
 const additionalPointsCalc = (oldBoard: boolean[][], newBoard: boolean[][]): number => {
