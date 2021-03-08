@@ -109,33 +109,30 @@ export const gameStep: gameStep = (props) => {
     : targetPlayer.work[selectedLine.lineIdx];
 
   // playerの更新
+  // テーブルの真ん中からタイルを選択したときに、1stタイルがあればOverに入れる
+  const isGetFirst = isSelectCenter && targetGroup.indexOf("first") >= 0;
+  if (isGetFirst) targetPlayer.over.push("first");
+  // 選択したタイルが同グループ内に何枚あるかをカウント
   const countSameTileReducer = (cnt: number, tile: Tile): number => tile === targetTileType ? cnt + 1 : cnt;
   const countSameTileInTargetGroup = targetGroup.reduce(countSameTileReducer, 0);
+  // Workのキャパシティを超えないように上記の枚数を加える
   const targetWorkCapacity = isSelectOver ? 99 : selectedLine.lineIdx + 1 - targetWorkLine.length;
-  const addWorkTilesCount =
-    targetWorkCapacity >= countSameTileInTargetGroup ? countSameTileInTargetGroup : targetWorkCapacity;
-  roopTimes(
-    () => targetPlayer.work[selectedLine.lineIdx].push(targetTileType),
-    addWorkTilesCount
-  );
-
-  const isGetFirst = isSelectCenter && targetGroup.indexOf("first") >= 0;
-  if (isGetFirst) {
-    targetPlayer.over.push("first");
-  }
-  const addOverTilesCount =
-    targetWorkCapacity >= countSameTileInTargetGroup
-      ? 0
-      : countSameTileInTargetGroup - targetWorkCapacity;
+  const OverWorkCapacity = targetWorkCapacity < countSameTileInTargetGroup
+  const addWorkTilesCount = OverWorkCapacity ? targetWorkCapacity : countSameTileInTargetGroup;
+  roopTimes(() => targetWorkLine.push(targetTileType), addWorkTilesCount);
+  // 選択したWorkのキャパシティを超える分は、Overに入れる
+  const addOverTilesCount = OverWorkCapacity ? countSameTileInTargetGroup - targetWorkCapacity : 0;
   const addOverTiles = mapTimes(() => targetTileType, addOverTilesCount);
   targetPlayer.over.push(...addOverTiles);
 
   // Tableの更新
+  // テーブルの真ん中からタイルを選択したときは、選択したタイルと1stタイルを取り除く
   if (isSelectCenter) {
     const newCenter = targetGroup.filter(
       (tile) => tile !== targetTileType && tile !== "first"
     );
     game.table.center = newCenter;
+  // グループからタイルを取得したときは、違う種類のタイルは真ん中に移動し、グループごと取り除く
   } else {
     const addCenter = targetGroup.filter((tile) => tile !== targetTileType);
     game.table.center.push(...addCenter);
@@ -168,7 +165,6 @@ export const gameStep: gameStep = (props) => {
       nowPlaying: nextNowPlaying,
     };
   }
-
   return { ...game, nowPlaying: newNowPlaying };
 };
 
