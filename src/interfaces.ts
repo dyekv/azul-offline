@@ -7,10 +7,10 @@ export interface Game {
 }
 
 export type Tile = 'moon' | 'sun' | 'dream' | 'leaf' | 'snow' | 'first'
-export type Group = Tile[]
+export type Dish = Tile[]
 
 export interface Table {
-    groups:Group[]
+    dishes:Dish[]
     center:Tile[]
 }
 

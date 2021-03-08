@@ -1,6 +1,6 @@
 import React,{useState,useEffect} from 'react';
 import './App.css';
-import {Game,Table,Group,Tile,SelectedTile,SelectedLine} from './interfaces'
+import {Game,SelectedTile,SelectedLine} from './interfaces'
 import {initializedGame,gameStep,lineCheck,makeMappingBoard} from './gameFunctions'
 
 // import {Box} from '@chakra-ui/react'
@@ -14,8 +14,8 @@ function App() {
 
   const onClickWorkLine = (selectedLine:SelectedLine) => {
     if(selectedTile !== undefined){
-      const selectedGroup = selectedTile.tableIdx === -1 ? game.table.center : game.table.groups[selectedTile.tableIdx]
-      const tileType = selectedGroup[selectedTile.tileIdx]
+      const selectedDish = selectedTile.tableIdx === -1 ? game.table.center : game.table.dishes[selectedTile.tableIdx]
+      const tileType = selectedDish[selectedTile.tileIdx]
       if(lineCheck(game,selectedLine,tileType)){
         setGame(gameStep({ game, selectedTile, selectedLine }))
         setSelectedTile(undefined)
@@ -26,9 +26,9 @@ function App() {
   return (
     <div className="game-wrapper">
       <div className="tables-wrapper">
-        {game.table.groups.map((group,tableIdx) => {
+        {game.table.dishes.map((dish,tableIdx) => {
           return <div key={tableIdx} className={"table-"+(tableIdx+1)} style={{backgroundColor:"#DDD",margin:'20px 0', display:'flex'}}>
-            {group.map((tile,tileIdx) => {
+            {dish.map((tile,tileIdx) => {
               const isSelectedTile = selectedTile?.tableIdx === tableIdx && selectedTile.tileIdx === tileIdx
               return <div 
                 className="tile" 

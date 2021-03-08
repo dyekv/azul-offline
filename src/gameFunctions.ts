@@ -1,7 +1,7 @@
 import {
   Game,
   Table,
-  Group,
+  Dish,
   Tile,
   Line,
   Player,
@@ -35,18 +35,18 @@ const makeInitializedPlayer = (countPlayer: number): Player[] => {
 
 export const makeRandomTable = (): Table => {
   const center: Tile[] = ["first"];
-  const groups = mapTimes(makeRandomGroup,5)
-  return { groups, center };
+  const dishes = mapTimes(makeRandomDish,5)
+  return { dishes, center };
 };
 
-export const makeRandomGroup = (): Group => {
+export const makeRandomDish = (): Dish => {
   const tiles: Tile[] = ["sun", "moon", "snow", "leaf", "dream"];
-  const group = mapTimes(() => {
+  const dish = mapTimes(() => {
     // 0~4の乱数を生成
     const random = Math.floor(Math.random() * 5);
     return tiles[random];
   }, 4);
-  return group;
+  return dish;
 };
 
 export const lineCheck = (
@@ -99,10 +99,10 @@ export const gameStep: gameStep = (props) => {
   const { game, selectedTile, selectedLine } = props;
   const targetPlayer = game.players[selectedLine.playerIdx];
   const isSelectCenter = selectedTile.tableIdx < 0;
-  const targetGroup = isSelectCenter
+  const targetDish = isSelectCenter
     ? game.table.center
-    : game.table.groups[selectedTile.tableIdx];
-  const targetTileType = targetGroup[selectedTile.tileIdx];
+    : game.table.dishes[selectedTile.tableIdx];
+  const targetTileType = targetDish[selectedTile.tileIdx];
   const isSelectOver = selectedLine.lineIdx < 0;
   const targetWorkLine = isSelectOver
     ? targetPlayer.over
@@ -110,40 +110,40 @@ export const gameStep: gameStep = (props) => {
 
   // playerの更新
   // テーブルの真ん中からタイルを選択したときに、1stタイルがあればOverに入れる
-  const isGetFirst = isSelectCenter && targetGroup.indexOf("first") >= 0;
+  const isGetFirst = isSelectCenter && targetDish.indexOf("first") >= 0;
   if (isGetFirst) targetPlayer.over.push("first");
-  // 選択したタイルが同グループ内に何枚あるかをカウント
+  // 選択したタイルが同じ皿に何枚あるかをカウント
   const countSameTileReducer = (cnt: number, tile: Tile): number => tile === targetTileType ? cnt + 1 : cnt;
-  const countSameTileInTargetGroup = targetGroup.reduce(countSameTileReducer, 0);
+  const countSameTileInTargetDish = targetDish.reduce(countSameTileReducer, 0);
   // Workのキャパシティを超えないように上記の枚数を加える
   const targetWorkCapacity = isSelectOver ? 99 : selectedLine.lineIdx + 1 - targetWorkLine.length;
-  const OverWorkCapacity = targetWorkCapacity < countSameTileInTargetGroup
-  const addWorkTilesCount = OverWorkCapacity ? targetWorkCapacity : countSameTileInTargetGroup;
+  const OverWorkCapacity = targetWorkCapacity < countSameTileInTargetDish
+  const addWorkTilesCount = OverWorkCapacity ? targetWorkCapacity : countSameTileInTargetDish;
   roopTimes(() => targetWorkLine.push(targetTileType), addWorkTilesCount);
   // 選択したWorkのキャパシティを超える分は、Overに入れる
-  const addOverTilesCount = OverWorkCapacity ? countSameTileInTargetGroup - targetWorkCapacity : 0;
+  const addOverTilesCount = OverWorkCapacity ? countSameTileInTargetDish - targetWorkCapacity : 0;
   const addOverTiles = mapTimes(() => targetTileType, addOverTilesCount);
   targetPlayer.over.push(...addOverTiles);
 
   // Tableの更新
   // テーブルの真ん中からタイルを選択したときは、選択したタイルと1stタイルを取り除く
   if (isSelectCenter) {
-    const newCenter = targetGroup.filter(
+    const newCenter = targetDish.filter(
       (tile) => tile !== targetTileType && tile !== "first"
     );
     game.table.center = newCenter;
-  // グループからタイルを取得したときは、違う種類のタイルは真ん中に移動し、グループごと取り除く
+  // 皿からタイルを取得したときは、違う種類のタイルは真ん中に移動し、皿ごと取り除く
   } else {
-    const addCenter = targetGroup.filter((tile) => tile !== targetTileType);
+    const addCenter = targetDish.filter((tile) => tile !== targetTileType);
     game.table.center.push(...addCenter);
-    game.table.groups.splice(selectedTile.tableIdx, 1);
+    game.table.dishes.splice(selectedTile.tableIdx, 1);
   }
 
   // 操作ターンのプレイヤーの更新
   const newNowPlaying = nextPlayer(game.players, game.nowPlaying);
 
   // テーブルのタイルがなくなったときの処理（フェイズ終了）
-  if (game.table.groups.length === 0 && game.table.center.length === 0) {
+  if (game.table.dishes.length === 0 && game.table.center.length === 0) {
     const newTable = makeRandomTable();
     const nextNowPlaying = game.players.findIndex(
       (player) => player.over.indexOf("first") > -1
