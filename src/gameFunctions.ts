@@ -55,27 +55,34 @@ export const lineCheck = (
   selectedTileType: Tile
 ): boolean => {
   const isAnotherPlayer = selectedLine.playerIdx !== game.nowPlaying;
-  const player = game.players[selectedLine.playerIdx];
-  const emptyLine = player.work[selectedLine.lineIdx].length === 0;
-  const sameTileLine =
-    !emptyLine && player.work[selectedLine.lineIdx][0] === selectedTileType;
-  const mappingBoard = makeMappingBoard()
-  const sameLineBoard = mappingBoard[selectedLine.lineIdx];
-  const mappingIndex = sameLineBoard.indexOf(selectedTileType);
-  const boardExistSameTile = player.board[selectedLine.lineIdx][mappingIndex];
-
-  // 選択したWorkが妥当かチェックする
   if (isAnotherPlayer) {
     console.log("Error anotherPlayer");
     return false;
   }
-  if (!emptyLine && !sameTileLine) {
-    console.log("Error anotherTile exist on this line");
-    return false;
-  }
-  if (boardExistSameTile) {
-    console.log("Error SameTile exist on board");
-    return false;
+  const player = game.players[selectedLine.playerIdx];
+  // lineIdxが-1のときはoverを選択したとき
+  const isSelectOver = selectedLine.lineIdx < 0
+  if(!isSelectOver){
+    const targetLine = player.work[selectedLine.lineIdx];
+    const emptyLine = targetLine.length === 0;
+    const sameTileLine =
+      !emptyLine && player.work[selectedLine.lineIdx][0] === selectedTileType;
+    const mappingBoard = makeMappingBoard()
+    const sameLineBoard = mappingBoard[selectedLine.lineIdx];
+    const mappingIndex = sameLineBoard.indexOf(selectedTileType);
+    const boardExistSameTile = player.board[selectedLine.lineIdx][mappingIndex];
+    if(selectedTileType === 'first'){
+      console.log("Error first cannot insert work")
+      return false;
+    }
+    if (!emptyLine && !sameTileLine && !isSelectOver) {
+      console.log("Error anotherTile exist on this line");
+      return false;
+    }
+    if (boardExistSameTile) {
+      console.log("Error SameTile exist on board");
+      return false;
+    }
   }
   return true;
 };
@@ -107,10 +114,11 @@ export const gameStep: gameStep = (props) => {
   const targetWorkLine = isSelectOver
     ? targetPlayer.over
     : targetPlayer.work[selectedLine.lineIdx];
+  const isSelectFirst = targetTileType === 'first';
 
   // playerの更新
   // テーブルの真ん中からタイルを選択したときに、1stタイルがあればOverに入れる
-  const isGetFirst = isSelectCenter && targetDish.indexOf("first") >= 0;
+  const isGetFirst = !isSelectFirst && isSelectCenter && targetDish.indexOf("first") >= 0;
   if (isGetFirst) targetPlayer.over.push("first");
   // 選択したタイルが同じ皿に何枚あるかをカウント
   const countSameTileReducer = (cnt: number, tile: Tile): number => tile === targetTileType ? cnt + 1 : cnt;
@@ -170,7 +178,7 @@ export const gameStep: gameStep = (props) => {
 
 const playerCalc = (player: Player): Player => {
   const oldBoard: boolean[][] = deepCopyAoa<boolean>(player.board);
-  moveTileFromWorkToBoard(oldBoard,player.work);
+  moveTileFromWorkToBoard(player.board,player.work);
   const additionalPoint = additionalPointsCalc(oldBoard, player.board);
   const mainusPoint = mainusPointsCalc(player.over.length);
   const playerPoint = player.point + additionalPoint - mainusPoint;
