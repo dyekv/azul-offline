@@ -181,6 +181,7 @@ const playerCalc = (player: Player): Player => {
   moveTileFromWorkToBoard(player.board,player.work);
   const additionalPoint = additionalPointsCalc(oldBoard, player.board);
   const mainusPoint = mainusPointsCalc(player.over.length);
+  console.log({additionalPoint,mainusPoint})
   const playerPoint = player.point + additionalPoint - mainusPoint;
   return {
     point: playerPoint,
@@ -204,7 +205,9 @@ const moveTileFromWorkToBoard = (board: boolean[][], work: Line[]): void => {
 
 const additionalPointsCalc = (oldBoard: boolean[][], newBoard: boolean[][]): number => {
   // Todo add ボードを比較して加算される点数を計算する処理
-  
+  console.log('oldboard : ',oldBoard)
+  console.log('newboard : ',newBoard)
+
   let additionalPoint = 0
   const addPoints = (y:number,x:number):void=>{
     additionalPoint += 1
@@ -215,6 +218,7 @@ const additionalPointsCalc = (oldBoard: boolean[][], newBoard: boolean[][]): num
   }
   const searchUp = (board:boolean[][],x:number,y:number):number => {
     let point = 0;
+    y--
     while(y >=0 ){
         if(board[y][x]){
             point ++
@@ -226,7 +230,8 @@ const additionalPointsCalc = (oldBoard: boolean[][], newBoard: boolean[][]): num
     return point
 }
 const searchDown = (board:boolean[][],x:number,y:number):number => {
-    let point = 0;
+  let point = 0;
+  y++
     while(y < 5 ){
         if(board[y][x]){
             point ++
@@ -238,7 +243,8 @@ const searchDown = (board:boolean[][],x:number,y:number):number => {
     return point
 }
 const searchLeft = (board:boolean[][],x:number,y:number):number => {
-    let point = 0;
+  let point = 0;
+  x--
     while(x >=0 ){
         if(board[y][x]){
             point ++
@@ -250,7 +256,8 @@ const searchLeft = (board:boolean[][],x:number,y:number):number => {
     return point
 }
 const searchRight = (board:boolean[][],x:number,y:number):number => {
-    let point = 0;
+  let point = 0;
+  x++
     while(x < 5 ){
         if(board[y][x]){
             point ++
@@ -264,7 +271,7 @@ const searchRight = (board:boolean[][],x:number,y:number):number => {
 
   newBoard.forEach((line, lineIdx) => {
     line.forEach((isTile,tileIdx)=>{
-      if(oldBoard[lineIdx][tileIdx] === isTile) addPoints(lineIdx,tileIdx)
+      if(oldBoard[lineIdx][tileIdx] !== isTile) addPoints(lineIdx,tileIdx)
     })
 });
   return additionalPoint;
