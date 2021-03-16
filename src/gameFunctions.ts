@@ -161,12 +161,30 @@ export const gameStep: gameStep = (props) => {
     });
 
     // Todo ゲームクリア判定
+    const playerClearCheck = (players: Player[]): boolean => {
+      players.forEach(player => {
+        player.board.forEach(line => {
+          let isCompleteLine = true
+          line.forEach(tile => {
+            if (isCompleteLine) {
+              isCompleteLine = tile
+            }
+          })
+          if (isCompleteLine) {
+            return true
+          }
+        })
+      })
+      return false
+    }
 
-    // Todo ゲーム終了時の得点計算
-
-    // Todo 勝敗判定、勝敗表示？
-
-    console.log("なくなった");
+    const isClear = playerClearCheck(game.players)
+    if (isClear) {
+      // Todo ゲーム終了時の得点計算
+  
+      // Todo 勝敗判定、勝敗表示？
+      
+    }
     return {
       table: newTable,
       players: newPlayers,
