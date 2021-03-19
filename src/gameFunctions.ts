@@ -181,7 +181,11 @@ export const gameStep: gameStep = (props) => {
     const isClear = playerClearCheck(game.players)
     if (isClear) {
       // Todo ゲーム終了時の得点計算
-  
+      game.players.forEach(player => {
+        const additionalPoint = additionalPointCalc(player.board);
+        player.point += additionalPoint;
+      })
+
       // Todo 勝敗判定、勝敗表示？
       
     }
@@ -197,10 +201,10 @@ export const gameStep: gameStep = (props) => {
 const playerCalc = (player: Player): Player => {
   const oldBoard: boolean[][] = deepCopyAoa<boolean>(player.board);
   moveTileFromWorkToBoard(player.board,player.work);
-  const additionalPoint = additionalPointsCalc(oldBoard, player.board);
+  const plusPoint = plusPointsCalc(oldBoard, player.board);
   const mainusPoint = mainusPointsCalc(player.over.length);
-  console.log({additionalPoint,mainusPoint})
-  const playerPoint = player.point + additionalPoint - mainusPoint;
+  console.log({plusPoint,mainusPoint})
+  const playerPoint = player.point + plusPoint - mainusPoint;
   return {
     point: playerPoint,
     board: player.board,
@@ -208,6 +212,37 @@ const playerCalc = (player: Player): Player => {
     over: [],
   };
 };
+
+const additionalPointCalc = (board: boolean[][]): number => {
+  let point = 0;
+  // 横一列が揃っていたら+2点
+  board.forEach((line => {
+    let check = true
+    line.forEach(tile => {
+      if (check) check = tile
+    })
+    if (check) point += 2
+  }));
+  // 縦一列が揃っていたら+7点
+  [...Array(5)].forEach((_, idx) => {
+    let check = true
+    board.forEach(line => {
+      if (check) check = line[idx]
+    })
+    if (check) point += 7
+  });
+  // 同じ色が５枚揃っていたら+10点
+  [...Array(5)].forEach((_, tileIdx) => {
+    let check = true
+    board.forEach((line, lineIdx) => {
+      // 斜めに検索していくために、タイルの場所にラインの値を足して5で割る
+      const idx = (tileIdx + lineIdx) % 5
+      if (check) check = line[idx]
+    })
+    if (check) point += 10
+  });
+  return point;
+}
 
 const moveTileFromWorkToBoard = (board: boolean[][], work: Line[]): void => {
   const mappingBoard = makeMappingBoard()
@@ -221,18 +256,18 @@ const moveTileFromWorkToBoard = (board: boolean[][], work: Line[]): void => {
   })
 }
 
-const additionalPointsCalc = (oldBoard: boolean[][], newBoard: boolean[][]): number => {
+const plusPointsCalc = (oldBoard: boolean[][], newBoard: boolean[][]): number => {
   // Todo add ボードを比較して加算される点数を計算する処理
   console.log('oldboard : ',oldBoard)
   console.log('newboard : ',newBoard)
 
-  let additionalPoint = 0
+  let plusPoint = 0
   const addPoints = (y:number,x:number):void=>{
-    additionalPoint += 1
-    additionalPoint += searchUp(newBoard,x,y)
-    additionalPoint += searchDown(oldBoard,x,y)
-    additionalPoint += searchLeft(newBoard,x,y)
-    additionalPoint += searchRight(oldBoard,x,y)
+    plusPoint += 1
+    plusPoint += searchUp(newBoard,x,y)
+    plusPoint += searchDown(oldBoard,x,y)
+    plusPoint += searchLeft(newBoard,x,y)
+    plusPoint += searchRight(oldBoard,x,y)
   }
   const searchUp = (board:boolean[][],x:number,y:number):number => {
     let point = 0;
@@ -292,7 +327,7 @@ const searchRight = (board:boolean[][],x:number,y:number):number => {
       if(oldBoard[lineIdx][tileIdx] !== isTile) addPoints(lineIdx,tileIdx)
     })
 });
-  return additionalPoint;
+  return plusPoint;
 };
 
 
